@@ -1,0 +1,10 @@
+# VS Code Extension Whitelist
+# Add one extension ID per line (e.g., ms-vscode.vscode-typescript-next)
+# Extensions listed here will NOT be uninstalled
+
+# Example: Keep TypeScript and Python extensions
+# ms-vscode.vscode-typescript-next
+# ms-python.python
+
+cweijan.vscode-database-client2
+cweijan.vscode-mysql-client2
