@@ -143,6 +143,12 @@ set "EXTENSION_LIST=extensions_required.txt"
 set "TMP_CURRENT=%TEMP%\wamp_extensions_current_%RANDOM%.txt"
 set "TMP_DESIRED=%TEMP%\wamp_extensions_desired_%RANDOM%.txt"
 
+where code >nul 2>nul
+if errorlevel 1 (
+    echo WARNING: VS Code CLI ^('code'^) not found. Skipping extension sync.
+    goto :skip_extension_sync
+)
+
 type nul > "%TMP_DESIRED%"
 if exist "%EXTENSION_LIST%" (
     findstr /r /v /c:"^[ ]*#" /c:"^[ ]*$" "%EXTENSION_LIST%" > "%TMP_DESIRED%" 2>nul
@@ -152,11 +158,19 @@ if exist "%EXTENSION_LIST%" (
 
 code --list-extensions > "%TMP_CURRENT%" 2>nul
 
+if errorlevel 1 (
+    echo WARNING: Could not list installed extensions. Skipping extension sync.
+    goto :cleanup_extension_sync
+)
+
 for /f "usebackq delims=" %%i in ("%TMP_CURRENT%") do (
     findstr /x /c:"%%i" "%TMP_DESIRED%" >nul
     if errorlevel 1 (
         echo Uninstalling extension: %%i
-        call code --uninstall-extension %%i
+        call code --uninstall-extension %%i >nul 2>nul
+        if errorlevel 1 (
+            echo WARNING: Failed to uninstall %%i. Continuing...
+        )
     ) else (
         echo Keeping required extension: %%i
     )
@@ -166,14 +180,19 @@ for /f "usebackq delims=" %%i in ("%TMP_DESIRED%") do (
     findstr /x /c:"%%i" "%TMP_CURRENT%" >nul
     if errorlevel 1 (
         echo Installing extension: %%i
-        call code --install-extension %%i
+        call code --install-extension %%i >nul 2>nul
+        if errorlevel 1 (
+            echo WARNING: Failed to install %%i. Continuing...
+        )
     ) else (
         echo Extension already installed: %%i
     )
 )
 
+:cleanup_extension_sync
 del /f /q "%TMP_CURRENT%" "%TMP_DESIRED%" 2>nul
-echo VS Code extensions synced successfully.
+echo VS Code extension sync step finished.
+:skip_extension_sync
 echo.
 
 REM ========================================
