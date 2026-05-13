@@ -10,14 +10,14 @@ This is a **Windows batch script** project for preparing lab computers before pr
 
 ### Core Files
 - `setup_wamp.bat` - Main automation script (8 steps), runs from USB flash drive
-- `extension_whitelist.txt` - VS Code extensions to keep (database clients for MySQL exams)
+- `extensions_required.txt` - exact VS Code extensions that must be present (database clients for MySQL exams)
 
 ### Execution Flow
 1. Clean current user profile folders (handles EN/PT-BR: Documents/Documentos, Pictures/Imagens)
 2. Clean shared "ALUNO" public folders on D: drive
 3. Clean ALUNO user profile (C:\Users\aluno), preserving AppData
 4. Reset WAMP www folder (C:\wamp64\www)
-5. Remove VS Code extensions not in whitelist (blocks AI cheating tools)
+5. Sync VS Code extensions to the required list (removes extras and installs missing ones)
 6. Empty recycle bin (prevent file recovery)
 7. Prompt for exam folder name, copy from USB to WAMP www
 8. Launch VS Code with the exam project
@@ -39,8 +39,8 @@ set "DOC_PATH=D:\Documentos\aluno"
 set "DOCS_PATH=D:\Documents\aluno"
 ```
 
-### Extension Whitelist Format
-One extension ID per line in `extension_whitelist.txt`. Comments start with `#`.
+### Required Extension List Format
+One extension ID per line in `extensions_required.txt`. Comments start with `#`.
 
 ## Key Behaviors
 
@@ -54,7 +54,7 @@ One extension ID per line in `extension_whitelist.txt`. Comments start with `#`.
 ```
 📁 Pendrive/
 ├── setup_wamp.bat
-├── extension_whitelist.txt
+├── extensions_required.txt
 └── 📁 prova-php-01/    ← Exam files folder
     ├── index.php
     └── ...

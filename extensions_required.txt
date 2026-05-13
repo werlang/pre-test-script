@@ -1,0 +1,11 @@
+# VS Code Required Extensions
+# Add one extension ID per line (e.g., ms-vscode.vscode-typescript-next)
+# Extensions listed here will be installed if missing
+# Extensions not listed here will be uninstalled
+
+# Example: Require TypeScript and Python extensions
+# ms-vscode.vscode-typescript-next
+# ms-python.python
+
+cweijan.vscode-database-client2
+cweijan.vscode-mysql-client2

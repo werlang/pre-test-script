@@ -20,7 +20,7 @@ Este script foi desenvolvido para preparar os computadores do laboratório antes
 | 2 | Limpa pastas públicas "ALUNO" (D:) | Limpa áreas compartilhadas onde alunos salvam arquivos |
 | 3 | Limpa perfil do usuário ALUNO | Remove arquivos do perfil padrão de aluno |
 | 4 | Limpa pasta www do WAMP | Prepara ambiente limpo para a prova |
-| 5 | Remove extensões do VS Code | **Remove extensões de IA e outras não permitidas** |
+| 5 | Sincroniza extensões do VS Code | **Remove extensões não permitidas e instala as obrigatórias** |
 | 6 | Esvazia lixeira | Impede recuperação de arquivos anteriores |
 | 7 | Copia arquivos da prova | Transfere arquivos do pendrive para o WAMP |
 | 8 | Abre VS Code | Inicia o ambiente de desenvolvimento |
@@ -31,7 +31,7 @@ Este script foi desenvolvido para preparar os computadores do laboratório antes
 
 1. Copie o script `setup_wamp.bat` para um pendrive
 2. Crie uma pasta no pendrive com os arquivos da prova (ex: `prova-php-01`)
-3. Edite `extension_whitelist.txt` se precisar manter extensões específicas
+3. Edite `extensions_required.txt` com a lista exata de extensões que devem estar instaladas
 
 ### Execução
 
@@ -46,7 +46,7 @@ Este script foi desenvolvido para preparar os computadores do laboratório antes
 ```
 📁 Pendrive (E:\ ou F:\)
 ├── setup_wamp.bat
-├── extension_whitelist.txt
+├── extensions_required.txt
 └── 📁 prova-php-01/          ← Pasta com arquivos da prova
     ├── index.php
     ├── conexao.php
@@ -55,14 +55,17 @@ Este script foi desenvolvido para preparar os computadores do laboratório antes
 
 ## Extensões do VS Code
 
-O script remove **todas** as extensões do VS Code, exceto as listadas em `extension_whitelist.txt`.
+O script ajusta o VS Code para bater exatamente com `extensions_required.txt`.
+
+- Extensões **instaladas mas fora da lista** são removidas
+- Extensões **presentes na lista mas ainda não instaladas** são instaladas
 
 ### Por que remover extensões?
 
 - Alunos instalam extensões de **IA** (GitHub Copilot, Tabnine, etc.) que não são permitidas em provas
 - Extensões desnecessárias podem atrapalhar ou dar vantagem indevida
 
-Para adicionar extensões permitidas, edite `extension_whitelist.txt` com o ID da extensão (uma por linha).
+Para definir as extensões obrigatórias, edite `extensions_required.txt` com o ID da extensão (uma por linha).
 
 ## Caminhos Configurados
 

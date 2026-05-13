@@ -135,27 +135,45 @@ echo WAMP www folder cleaned successfully.
 echo.
 
 REM ========================================
-REM Step 5: Remove all VS Code extensions
+REM Step 5: Sync VS Code extensions
 REM ========================================
-echo [5/8] Removing all VS Code extensions...
+echo [5/8] Syncing VS Code extensions...
 
-if exist "extension_whitelist.txt" (
-    for /f "usebackq delims=" %%i in (`code --list-extensions 2^>nul`) do (
-        findstr /c:"%%i" "extension_whitelist.txt" >nul
-        if errorlevel 1 (
-            echo Uninstalling extension: %%i
-            call code --uninstall-extension %%i
-        ) else (
-            echo Keeping whitelisted extension: %%i
-        )
-    )
+set "EXTENSION_LIST=extensions_required.txt"
+set "TMP_CURRENT=%TEMP%\wamp_extensions_current_%RANDOM%.txt"
+set "TMP_DESIRED=%TEMP%\wamp_extensions_desired_%RANDOM%.txt"
+
+type nul > "%TMP_DESIRED%"
+if exist "%EXTENSION_LIST%" (
+    findstr /r /v /c:"^[ ]*#" /c:"^[ ]*$" "%EXTENSION_LIST%" > "%TMP_DESIRED%" 2>nul
 ) else (
-    for /f "usebackq delims=" %%i in (`code --list-extensions 2^>nul`) do (
+    echo - Extension list not found. Removing all installed extensions.
+)
+
+code --list-extensions > "%TMP_CURRENT%" 2>nul
+
+for /f "usebackq delims=" %%i in ("%TMP_CURRENT%") do (
+    findstr /x /c:"%%i" "%TMP_DESIRED%" >nul
+    if errorlevel 1 (
         echo Uninstalling extension: %%i
         call code --uninstall-extension %%i
+    ) else (
+        echo Keeping required extension: %%i
     )
 )
-echo All extensions removed.
+
+for /f "usebackq delims=" %%i in ("%TMP_DESIRED%") do (
+    findstr /x /c:"%%i" "%TMP_CURRENT%" >nul
+    if errorlevel 1 (
+        echo Installing extension: %%i
+        call code --install-extension %%i
+    ) else (
+        echo Extension already installed: %%i
+    )
+)
+
+del /f /q "%TMP_CURRENT%" "%TMP_DESIRED%" 2>nul
+echo VS Code extensions synced successfully.
 echo.
 
 REM ========================================
