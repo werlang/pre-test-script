@@ -1,8 +1,22 @@
 @echo off
+setlocal
+
+if not defined EXTENSION_LIST set "EXTENSION_LIST=%~dp0extensions.txt"
+
+if /I "%~1"=="__SYNC_EXT__" goto :sync_extensions
+
+REM Always run from this script folder (important when launched by double-click)
+cd /d "%~dp0"
 
 REM ========================================
 REM Setup Script for WAMP Development
 REM ========================================
+
+if not defined USER_PROFILE_ROOT set "USER_PROFILE_ROOT=%USERPROFILE%"
+if not defined DOC_PATH set "DOC_PATH=D:\Documentos\aluno"
+if not defined DOCS_PATH set "DOCS_PATH=D:\Documents\aluno"
+if not defined ALUNO_PROFILE set "ALUNO_PROFILE=C:\Users\aluno"
+if not defined WAMP_WWW set "WAMP_WWW=C:\wamp64\www"
 
 echo Starting setup process...
 echo.
@@ -10,28 +24,28 @@ echo.
 REM ========================================
 REM Step 1: Clean Current User Folders
 REM ========================================
-echo [1/6] Cleaning current user folders...
+echo [1/8] Cleaning current user folders...
 
 REM Clean all common user folder variations (handles both EN and PT-BR)
 echo - Cleaning Downloads...
-if exist "%USERPROFILE%\Downloads" rd /s /q "%USERPROFILE%\Downloads" 2>nul & md "%USERPROFILE%\Downloads" 2>nul
+if exist "%USER_PROFILE_ROOT%\Downloads" rd /s /q "%USER_PROFILE_ROOT%\Downloads" 2>nul & md "%USER_PROFILE_ROOT%\Downloads" 2>nul
 
 echo - Cleaning Documents/Documentos...
-if exist "%USERPROFILE%\Documents" rd /s /q "%USERPROFILE%\Documents" 2>nul & md "%USERPROFILE%\Documents" 2>nul
-if exist "%USERPROFILE%\Documentos" rd /s /q "%USERPROFILE%\Documentos" 2>nul & md "%USERPROFILE%\Documentos" 2>nul
+if exist "%USER_PROFILE_ROOT%\Documents" rd /s /q "%USER_PROFILE_ROOT%\Documents" 2>nul & md "%USER_PROFILE_ROOT%\Documents" 2>nul
+if exist "%USER_PROFILE_ROOT%\Documentos" rd /s /q "%USER_PROFILE_ROOT%\Documentos" 2>nul & md "%USER_PROFILE_ROOT%\Documentos" 2>nul
 
 echo - Cleaning Pictures/Imagens...
-if exist "%USERPROFILE%\Pictures" rd /s /q "%USERPROFILE%\Pictures" 2>nul & md "%USERPROFILE%\Pictures" 2>nul
-if exist "%USERPROFILE%\Imagens" rd /s /q "%USERPROFILE%\Imagens" 2>nul & md "%USERPROFILE%\Imagens" 2>nul
+if exist "%USER_PROFILE_ROOT%\Pictures" rd /s /q "%USER_PROFILE_ROOT%\Pictures" 2>nul & md "%USER_PROFILE_ROOT%\Pictures" 2>nul
+if exist "%USER_PROFILE_ROOT%\Imagens" rd /s /q "%USER_PROFILE_ROOT%\Imagens" 2>nul & md "%USER_PROFILE_ROOT%\Imagens" 2>nul
 
 echo - Cleaning Videos...
-if exist "%USERPROFILE%\Videos" rd /s /q "%USERPROFILE%\Videos" 2>nul & md "%USERPROFILE%\Videos" 2>nul
+if exist "%USER_PROFILE_ROOT%\Videos" rd /s /q "%USER_PROFILE_ROOT%\Videos" 2>nul & md "%USER_PROFILE_ROOT%\Videos" 2>nul
 
 echo - Cleaning Music...
-if exist "%USERPROFILE%\Music" rd /s /q "%USERPROFILE%\Music" 2>nul & md "%USERPROFILE%\Music" 2>nul
+if exist "%USER_PROFILE_ROOT%\Music" rd /s /q "%USER_PROFILE_ROOT%\Music" 2>nul & md "%USER_PROFILE_ROOT%\Music" 2>nul
 
 echo - Cleaning Desktop...
-if exist "%USERPROFILE%\Desktop" rd /s /q "%USERPROFILE%\Desktop" 2>nul & md "%USERPROFILE%\Desktop" 2>nul
+if exist "%USER_PROFILE_ROOT%\Desktop" rd /s /q "%USER_PROFILE_ROOT%\Desktop" 2>nul & md "%USER_PROFILE_ROOT%\Desktop" 2>nul
 
 echo Current user folders cleaned successfully.
 echo.
@@ -39,10 +53,7 @@ echo.
 REM ========================================
 REM Step 2: Clean ALUNO Public Folders
 REM ========================================
-echo [2/6] Cleaning ALUNO public folders...
-
-set "DOC_PATH=D:\Documentos\aluno"
-set "DOCS_PATH=D:\Documents\aluno"
+echo [2/8] Cleaning ALUNO public folders...
 
 for /d %%D in ("%DOC_PATH%\*") do (
     echo Cleaning folder: %%~nxD
@@ -62,9 +73,7 @@ for /d %%D in ("%DOCS_PATH%\*") do (
 REM ========================================
 REM Step 3: Clean ALUNO User Profile Folder
 REM ========================================
-echo [3/6] Cleaning ALUNO user profile folder...
-
-set ALUNO_PROFILE=C:\Users\aluno
+echo [3/8] Cleaning ALUNO user profile folder...
 
 if not exist "%ALUNO_PROFILE%" (
     echo - ALUNO user profile not found, skipping...
@@ -117,9 +126,7 @@ echo.
 REM ========================================
 REM Step 4: Clean WAMP www folder
 REM ========================================
-echo [4/6] Cleaning WAMP www folder...
-
-set WAMP_WWW=C:\wamp64\www
+echo [4/8] Cleaning WAMP www folder...
 
 if not exist "%WAMP_WWW%" (
     echo ERROR: WAMP www folder not found at %WAMP_WWW%
@@ -139,60 +146,14 @@ REM Step 5: Sync VS Code extensions
 REM ========================================
 echo [5/8] Syncing VS Code extensions...
 
-set "EXTENSION_LIST=extensions_required.txt"
-set "TMP_CURRENT=%TEMP%\wamp_extensions_current_%RANDOM%.txt"
-set "TMP_DESIRED=%TEMP%\wamp_extensions_desired_%RANDOM%.txt"
-
-where code >nul 2>nul
-if errorlevel 1 (
-    echo WARNING: VS Code CLI ^('code'^) not found. Skipping extension sync.
-    goto :skip_extension_sync
-)
-
-type nul > "%TMP_DESIRED%"
-if exist "%EXTENSION_LIST%" (
-    findstr /r /v /c:"^[ ]*#" /c:"^[ ]*$" "%EXTENSION_LIST%" > "%TMP_DESIRED%" 2>nul
+if /I "%SETUP_WAMP_SKIP_EXTENSION_SYNC%"=="1" (
+    echo Skipping extension sync.
+) else if not exist "%EXTENSION_LIST%" (
+    echo WARNING: Extension list not found at %EXTENSION_LIST%. Skipping extension sync.
 ) else (
-    echo - Extension list not found. Removing all installed extensions.
+    call :sync_extensions
 )
-
-code --list-extensions > "%TMP_CURRENT%" 2>nul
-
-if errorlevel 1 (
-    echo WARNING: Could not list installed extensions. Skipping extension sync.
-    goto :cleanup_extension_sync
-)
-
-for /f "usebackq delims=" %%i in ("%TMP_CURRENT%") do (
-    findstr /x /c:"%%i" "%TMP_DESIRED%" >nul
-    if errorlevel 1 (
-        echo Uninstalling extension: %%i
-        call code --uninstall-extension %%i >nul 2>nul
-        if errorlevel 1 (
-            echo WARNING: Failed to uninstall %%i. Continuing...
-        )
-    ) else (
-        echo Keeping required extension: %%i
-    )
-)
-
-for /f "usebackq delims=" %%i in ("%TMP_DESIRED%") do (
-    findstr /x /c:"%%i" "%TMP_CURRENT%" >nul
-    if errorlevel 1 (
-        echo Installing extension: %%i
-        call code --install-extension %%i >nul 2>nul
-        if errorlevel 1 (
-            echo WARNING: Failed to install %%i. Continuing...
-        )
-    ) else (
-        echo Extension already installed: %%i
-    )
-)
-
-:cleanup_extension_sync
-del /f /q "%TMP_CURRENT%" "%TMP_DESIRED%" 2>nul
 echo VS Code extension sync step finished.
-:skip_extension_sync
 echo.
 
 REM ========================================
@@ -200,7 +161,11 @@ REM Step 6: Empty the recycle bin
 REM ========================================
 echo [6/8] Emptying the recycle bin...
 
-powershell -command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+if /I "%SETUP_WAMP_SKIP_RECYCLE_BIN%"=="1" (
+    echo Skipping recycle bin cleanup.
+) else (
+    powershell -command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+)
 echo Recycle bin emptied.
 echo.
 
@@ -209,8 +174,44 @@ REM Step 7: Copy project from flash drive
 REM ========================================
 echo [7/8] Copying project from flash drive...
 
-set /p SOURCE_FOLDER="Enter source folder name on flash drive: "
-set SOURCE_PATH=.\%SOURCE_FOLDER%
+if defined SOURCE_FOLDER (
+    echo Using source folder name: %SOURCE_FOLDER%
+) else (
+    set /p "SOURCE_FOLDER=Enter source folder name on flash drive: "
+)
+
+if "%SOURCE_FOLDER%"=="" (
+    echo ERROR: Source folder name cannot be empty.
+    pause
+    exit /b 1
+)
+
+if not "%SOURCE_FOLDER%"=="%SOURCE_FOLDER:\=%" (
+    echo ERROR: Source folder name cannot contain path separators.
+    pause
+    exit /b 1
+)
+
+if not "%SOURCE_FOLDER%"=="%SOURCE_FOLDER:/=%" (
+    echo ERROR: Source folder name cannot contain path separators.
+    pause
+    exit /b 1
+)
+
+if "%SOURCE_FOLDER%"==".." (
+    echo ERROR: Source folder name cannot be ..
+    pause
+    exit /b 1
+)
+
+if not "%SOURCE_FOLDER%"=="%SOURCE_FOLDER:..=%" (
+    echo ERROR: Source folder name cannot contain ..
+    pause
+    exit /b 1
+)
+
+set "SOURCE_PATH=.\%SOURCE_FOLDER%"
+set "PROJECT_DEST=%WAMP_WWW%\%SOURCE_FOLDER%"
 
 if not exist "%SOURCE_PATH%" (
     echo ERROR: Source folder not found at %SOURCE_PATH%
@@ -218,11 +219,12 @@ if not exist "%SOURCE_PATH%" (
     exit /b 1
 )
 
-echo Copying from %SOURCE_PATH% to %WAMP_WWW%...
-xcopy "%SOURCE_PATH%\*" "%WAMP_WWW%\%SOURCE_PATH%\" /E /I /H /Y
+echo Copying from %SOURCE_PATH% to %PROJECT_DEST%...
+robocopy "%SOURCE_PATH%" "%PROJECT_DEST%" /E /COPY:DAT /R:2 /W:1 /NFL /NDL /NJH /NJS /NP >nul
+set "COPY_EXIT_CODE=%ERRORLEVEL%"
 
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Failed to copy files.
+if %COPY_EXIT_CODE% GEQ 8 (
+    echo ERROR: Failed to copy files. Robocopy exit code: %COPY_EXIT_CODE%
     pause
     exit /b 1
 )
@@ -235,11 +237,20 @@ REM Step 8: Start VS Code
 REM ========================================
 echo [8/8] Starting VS Code...
 
-start "" code "%WAMP_WWW%\%SOURCE_PATH%"
+if /I "%SETUP_WAMP_SKIP_CODE_LAUNCH%"=="1" (
+    echo Skipping VS Code launch.
+) else (
+    start "" code "%PROJECT_DEST%"
+)
 
 echo.
 echo ========================================
 echo Setup completed successfully!
 echo ========================================
 echo.
-pause
+if /I not "%SETUP_WAMP_NO_PAUSE%"=="1" pause
+exit /b 0
+
+:sync_extensions
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& { $ErrorActionPreference = 'Stop'; $extensionList = '%EXTENSION_LIST%'; if (-not (Test-Path -LiteralPath $extensionList)) { Write-Host ('WARNING: Extension list not found at ' + $extensionList + '. Skipping extension sync.'); exit 0 }; if (-not (Get-Command code -ErrorAction SilentlyContinue)) { Write-Host 'WARNING: VS Code CLI (code) not found. Skipping extension sync.'; exit 0 }; $desired = Get-Content -LiteralPath $extensionList | ForEach-Object { $_.Trim() } | Where-Object { $_ -and -not $_.StartsWith('#') } | Sort-Object -Unique; $current = @(code --list-extensions); if ($LASTEXITCODE -ne 0) { Write-Host 'WARNING: Could not list installed extensions. Skipping extension sync.'; exit 0 }; $current = $current | ForEach-Object { $_.Trim() } | Where-Object { $_ } | Sort-Object -Unique; foreach ($ext in $current) { if ($desired -notcontains $ext) { Write-Host ('Uninstalling extension: ' + $ext); code --uninstall-extension $ext --force; if ($LASTEXITCODE -ne 0) { Write-Host ('WARNING: Failed to uninstall ' + $ext + '. Continuing...') } else { Write-Host ('Removed extension: ' + $ext) } } else { Write-Host ('Keeping required extension: ' + $ext) } }; foreach ($ext in $desired) { if ($current -notcontains $ext) { Write-Host ('Installing extension: ' + $ext); code --install-extension $ext; if ($LASTEXITCODE -ne 0) { Write-Host ('WARNING: Failed to install ' + $ext + '. Continuing...') } else { Write-Host ('Installed extension: ' + $ext) } } else { Write-Host ('Extension already installed: ' + $ext) } }; exit 0 }"
+exit /b %ERRORLEVEL%
